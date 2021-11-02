@@ -31,35 +31,35 @@ service KeyValueStore {
 
 // The request message containing the key.
 message GetRequest {
-  string key = 1;
+  bytes key = 1;
 }
 
 // The response message containing the value of corresponding key
 message GetReply {
-  string value = 1;
+  bytes value = 1;
   int32 status=2;
 }
 
 // The request message containing the key and value.
 message PutRequest {
-  string key = 1;
-  string value = 2;
+  bytes key = 1;
+  bytes value = 2;
 }
 
 // The response message containing message after adding key-value pair
 message PutReply {
-  string message = 1;
+  bytes message_ = 1;
   int32 status=2;
 }
 
 // The request message containing the key and value.
 message DelRequest {
-  string key = 1;
+  bytes key = 1;
 }
 
 // The response message containing message after removing key-value pair
 message DelReply {
-  string message = 1;
+  bytes message_ = 1;
   int32 status=2;
 }
 

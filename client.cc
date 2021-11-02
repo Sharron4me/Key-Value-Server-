@@ -15,7 +15,9 @@
 #include <thread>
 
 #include "kv.grpc.pb.h"
+#include <chrono>
 
+using namespace std::chrono;
 
 using grpc::Channel;
 using grpc::ChannelArguments;
@@ -107,7 +109,7 @@ public:
 	        GPR_ASSERT(ok);
 			if(status.ok())
 			{
-                std::cout << "Message received: " <<reply.message() <<"Status:"<<reply.status()<< std::endl;
+                std::cout << "Message received: " <<reply.message_() <<"Status:"<<reply.status()<< std::endl;
 								// time(&end);
 
 			}
@@ -138,7 +140,7 @@ public:
 	        GPR_ASSERT(ok);
 			if(status.ok())
 			{
-				std::cout << "Message received: " <<reply.message()<<"Status:"<<reply.status() << std::endl;
+				std::cout << "Message received: " <<reply.message_()<<"Status:"<<reply.status() << std::endl;
 				// time(&end);
 
 			}
@@ -231,8 +233,11 @@ int main(int argc, char* argv[])
 	cin>>mode;
 	if(mode==1)
 	{
+
+		double totalB=0;
 		fstream newfile;
 		newfile.open("batch.txt",ios::in); //open a file to perform read operation using file object
+		int numB=0;
   		if (newfile.is_open())
 		  {   //checking whether the file is open
       string tp;
@@ -243,44 +248,70 @@ int main(int argc, char* argv[])
     	std::vector<std::string> v = split (tp, delimiter);
 
 	string func=v.front();
+    
 	if(!func.compare("Get"))
 	{
+		numB++;
 		v.erase(v.begin());
-		string key=v.front();
-time(&start);
-  
+		string key=v.front();  
     // unsync the I/O of C and C++.
-    ios_base::sync_with_stdio(false);		
-	client.GetValue(key);
+    	ios_base::sync_with_stdio(false);
+		auto start = high_resolution_clock::now();	
+		client.GetValue(key);
+		auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+		totalB+=duration.count();
+		cout<<"Get Time:"<<duration.count()<< " microseconds"<<endl;
+    
+
 	}
 	else if(!func.compare("Put"))
 	{
+		numB++;
 		v.erase(v.begin());
 		string key=v.front();
 		v.erase(v.begin());
 		string value=v.front();
-time(&start);
-  
-    // unsync the I/O of C and C++.
-    ios_base::sync_with_stdio(false);		
-	client.PutKValue(key,value);
-	}
-	else if(!func.compare("Del"))
-	{
-		v.erase(v.begin());
-		string key=v.front();
-time(&start);
   
     // unsync the I/O of C and C++.
     ios_base::sync_with_stdio(false);	
-		client.DelKValue(key);
+	auto start = high_resolution_clock::now();		
+	client.PutKValue(key,value);
+	auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+	totalB+=duration.count();
+	cout<<"Put Time:"<<duration.count()<< " microseconds"<<endl;
+	}
+
+	else if(!func.compare("Del"))
+	{
+		numB++;
+		v.erase(v.begin());
+		string key=v.front();
+  
+    // unsync the I/O of C and C++.
+    ios_base::sync_with_stdio(false);	
+	auto start = high_resolution_clock::now();		
+	client.DelKValue(key);
+	auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+	totalB+=duration.count();
+	cout<<"Delete Time:"<<duration.count()<< " microseconds"<<endl;
+
 	}
 	    }
+	  
       newfile.close(); //close the file object.
+	  cout<<"Requests Batch:"<<numB<<endl;
+	  cout<<"Total Time Batch:"<<totalB<<endl;
+	  cout<<"Average Time Batch:"<<double(totalB/numB)<<endl;
    }
+   	  
 	}
 	else if(mode==2)
 	{
+	int numI=0;
+	double totalI=0;
 	std::cout<<"1.Get Key 2.Put Key Value 3.Del Key"<<std::endl;
 	std::cout << "Press control-c to quit" << std::endl << std::endl;
 	while(1)
@@ -292,37 +323,65 @@ std::string delimiter = " ";
 	string func=v.front();
 	if(!func.compare("Get"))
 	{
+		numI++;
 		v.erase(v.begin());
-		string key=v.front();
-time(&start);
-  
+		string key=v.front();  
     // unsync the I/O of C and C++.
     ios_base::sync_with_stdio(false);	
+		auto start = high_resolution_clock::now();	
 		client.GetValue(key);
-	}
+		auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+		totalI+=duration.count();
+		cout<<"Get Time:"<<duration.count()<< " microseconds"<<endl;
+			
+		}
 	else if(!func.compare("Put"))
 	{
+		numI++;
 		v.erase(v.begin());
 		string key=v.front();
 		v.erase(v.begin());
 		string value=v.front();
-time(&start);
   
     // unsync the I/O of C and C++.
     ios_base::sync_with_stdio(false);		
+	auto start = high_resolution_clock::now();		
 	client.PutKValue(key,value);
+	auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+	totalI+=duration.count();
+	cout<<"Put Time:"<<duration.count()<< " microseconds"<<endl;
+	
 	}
 	else if(!func.compare("Del"))
 	{
+		numI++;
 		v.erase(v.begin());
 		string key=v.front();
-		time(&start);
   
     // unsync the I/O of C and C++.
     ios_base::sync_with_stdio(false);
-		client.DelKValue(key);
-	}	}
+auto start = high_resolution_clock::now();		
+	client.DelKValue(key);
+	auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+	totalI+=duration.count();
+	cout<<"Delete Time:"<<duration.count()<< " microseconds"<<endl;	
+
 	}
+	else if(!func.compare("Exit"))
+	{
+		cout<<"Requests Interactive:"<<numI<<endl;
+		cout<<"Total Time Interactive:"<<totalI<<endl;
+		cout<<"Average Time Interactive:"<<double(totalI/numI)<<endl;
+		break;
+	}	
+	}
+	
+	}
+	std::cout << "Press control-c to quit" << std::endl << std::endl;
+  
 	thread_.join();
 
 }

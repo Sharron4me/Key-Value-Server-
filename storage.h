@@ -16,7 +16,7 @@ using namespace std;
 
 
 int *fds;
-int setSize=4;
+int setSize=2;
 int *readCounters;
 sem_t *mutex1;
 sem_t *readerLocks;
@@ -98,7 +98,12 @@ string toString(char* a)
     int i;
     string s = "";
     for (i = 0; i < 256; i++) {
-        s = s + a[i];
+        if(a[i]=='\0'){
+            s=s+"\0";
+            break;
+        }
+        else
+            s = s + a[i];
     }
     return s;
 }
@@ -166,7 +171,7 @@ int file_get(char *key, char *value)
     {
         sem_post(&mutex1[index]);
     }
-
+    cout<<"StorageSays: "<<value<<endl;
     sem_post(&readerLocks[index]);
     return flag;
 }
@@ -219,7 +224,7 @@ int storage_init()
 
 
 
-            mutex1=(sem_t *)malloc(sizeof(sem_t)*setSize);
+    mutex1=(sem_t *)malloc(sizeof(sem_t)*setSize);
     char fileName[22+setSize];
     for(i=0;i<setSize;i++)
     {
@@ -241,4 +246,3 @@ int storage_init()
     }
     return 0;
 }
-
